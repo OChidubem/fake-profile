@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fake Profile Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #e94560, #0f3460, #533483);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.4rem;
+    }
+
+    header p {
+      color: #a0a0b0;
+      font-size: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .controls label {
+      font-size: 0.95rem;
+      color: #c0c0d0;
+    }
+
+    .controls select {
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid #2a2a4a;
+      background: #1a1a3e;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn {
+      padding: 0.65rem 1.8rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e94560, #c0392b);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(233,69,96,0.35);
+    }
+
+    .btn-primary:hover { box-shadow: 0 6px 20px rgba(233,69,96,0.55); }
+
+    #profiles-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .profile-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 1.8rem;
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .profile-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 3px solid #e94560;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #1a1a3e;
+    }
+
+    .card-header-info h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.15rem;
+    }
+
+    .card-header-info span {
+      font-size: 0.82rem;
+      color: #a0a0c0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.18rem 0.55rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-left: 0.4rem;
+    }
+
+    .badge-male   { background: rgba(79,195,247,0.2); color: #4fc3f7; }
+    .badge-female { background: rgba(240,98,146,0.2); color: #f06292; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      margin: 0.9rem 0;
+    }
+
+    .field {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      margin-bottom: 0.65rem;
+      font-size: 0.88rem;
+    }
+
+    .field .icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+    .field .label {
+      color: #8080a0;
+      font-size: 0.78rem;
+      min-width: 4rem;
+      flex-shrink: 0;
+    }
+
+    .field .value { color: #d0d0e8; word-break: break-word; }
+
+    .bio {
+      margin-top: 0.8rem;
+      font-size: 0.83rem;
+      color: #9090b0;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    #loading {
+      text-align: center;
+      padding: 3rem;
+      display: none;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #e94560;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #error-msg {
+      text-align: center;
+      color: #e94560;
+      padding: 1rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎭 Fake Profile Generator</h1>
+    <p>Generate realistic fake profiles instantly</p>
+  </header>
+
+  <div class="controls">
+    <label for="count-select">Profiles to generate:</label>
+    <select id="count-select">
+      <option value="1">1 profile</option>
+      <option value="2">2 profiles</option>
+      <option value="3" selected>3 profiles</option>
+      <option value="5">5 profiles</option>
+      <option value="10">10 profiles</option>
+    </select>
+    <button class="btn btn-primary" onclick="generateProfiles()">⚡ Generate</button>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Generating profiles…</p>
+  </div>
+  <div id="error-msg">Failed to generate profiles. Please try again.</div>
+  <div id="profiles-container"></div>
+
+  <script>
+    function generateProfiles() {
+      const count = document.getElementById('count-select').value;
+      const container = document.getElementById('profiles-container');
+      const loading = document.getElementById('loading');
+      const errMsg = document.getElementById('error-msg');
+
+      container.innerHTML = '';
+      errMsg.style.display = 'none';
+      loading.style.display = 'block';
+
+      fetch(`/api/generate?count=${count}`)
+        .then(r => r.json())
+        .then(profiles => {
+          loading.style.display = 'none';
+          profiles.forEach(p => container.appendChild(buildCard(p)));
+        })
+        .catch(() => {
+          loading.style.display = 'none';
+          errMsg.style.display = 'block';
+        });
+    }
+
+    function buildCard(p) {
+      const card = document.createElement('div');
+      card.className = 'profile-card';
+      const genderClass = p.gender.toLowerCase() === 'male' ? 'badge-male' : 'badge-female';
+
+      card.innerHTML = `
+        <div class="card-header">
+          <img class="avatar" src="${escHtml(p.avatar)}" alt="Avatar for ${escHtml(p.name)}"
+               onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 72 72%22%3E%3Ccircle cx=%2236%22 cy=%2236%22 r=%2236%22 fill=%22%232a2a4a%22/%3E%3Ctext x=%2236%22 y=%2244%22 text-anchor=%22middle%22 font-size=%2232%22%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E'" />
+          <div class="card-header-info">
+            <h2>${escHtml(p.name)} <span class="badge ${genderClass}">${escHtml(p.gender)}</span></h2>
+            <span>@${escHtml(p.username)}</span>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="field"><span class="icon">✉️</span><span class="label">Email</span><span class="value">${escHtml(p.email)}</span></div>
+        <div class="field"><span class="icon">📞</span><span class="label">Phone</span><span class="value">${escHtml(p.phone)}</span></div>
+        <div class="field"><span class="icon">📍</span><span class="label">Address</span><span class="value">${escHtml(p.address)}</span></div>
+        <div class="field"><span class="icon">🎂</span><span class="label">DOB</span><span class="value">${escHtml(p.date_of_birth)}</span></div>
+        <div class="field"><span class="icon">💼</span><span class="label">Job</span><span class="value">${escHtml(p.job)}</span></div>
+        <div class="field"><span class="icon">🏢</span><span class="label">Company</span><span class="value">${escHtml(p.company)}</span></div>
+        <div class="field"><span class="icon">🌐</span><span class="label">Website</span><span class="value">${escHtml(p.website)}</span></div>
+        <p class="bio">"${escHtml(p.bio)}"</p>
+      `;
+      return card;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Auto-generate on load
+    generateProfiles();
+  </script>
+</body>
+</html>
